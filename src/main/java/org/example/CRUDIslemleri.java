@@ -1,6 +1,7 @@
 package org.example;
 
-import java.sql.*;
+import org.jdbi.v3.core.Handle;
+import org.jdbi.v3.core.Jdbi;
 
 public class CRUDIslemleri {
     // Veritabanı bağlantı bilgileri
@@ -9,39 +10,23 @@ public class CRUDIslemleri {
     static final String PASS = "test123";
 
     public static void main(String[] args) {
-        Connection conn = null;
-        Statement stmt = null;
-        try {
-            // Veritabanına bağlan
-            conn = DriverManager.getConnection(DB_URL, USER, PASS);
-            stmt = conn.createStatement();
+        // JDBI bağlantısı oluştur
+        Jdbi jdbi = Jdbi.create(DB_URL, USER, PASS);
 
+        // CRUD işlemleri
+        try (Handle handle = jdbi.open()) {
             // Tablo oluştur
-            String createTableSQL = "CREATE TABLE IF NOT EXISTS ad_soyad (id SERIAL PRIMARY KEY, name VARCHAR(50))";
-            stmt.executeUpdate(createTableSQL);
+            handle.execute("CREATE TABLE IF NOT EXISTS ad_soyad (id SERIAL PRIMARY KEY, name VARCHAR(50))");
 
             // Veri ekle
-            String insertSQL = "INSERT INTO ad_soyad (name) VALUES ('Simge Kurtuldu'), ('Jane Smith'), ('Alice Johnson')";
-            stmt.executeUpdate(insertSQL);
-
-            System.out.println("Table created and data inserted successfully");
+            handle.execute("INSERT INTO ad_soyad (name) VALUES ('John Doe'), ('Jane Smith'), ('Alice Johnson')");
+            System.out.println("Data inserted successfully");
 
             // Bir kayıt sil
-            String deleteSQL = "DELETE FROM ad_soyad WHERE name = 'Simge Kurtuldu'";
-            stmt.executeUpdate(deleteSQL);
-
+            handle.execute("DELETE FROM ad_soyad WHERE name = 'John Doe'");
             System.out.println("Record deleted successfully");
-
-        } catch (SQLException e) {
+        } catch (Exception e) {
             e.printStackTrace();
-        } finally {
-            // Bağlantıyı ve kaynakları kapat
-            try {
-                if (stmt != null) stmt.close();
-                if (conn != null) conn.close();
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
         }
     }
 }
